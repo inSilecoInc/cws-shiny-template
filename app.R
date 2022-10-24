@@ -1,4 +1,6 @@
 library(shiny)
+source("setup.R")
+
 ui <- fluidPage(
   # Menu
   selectInput(
