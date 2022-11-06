@@ -1,14 +1,17 @@
 library(shiny)
 library(DT)
 library(leaflet)
-source("setup.R")
-densities <- read.csv("data/densities.csv")
-species <- read.csv("data/species.csv")
-geo <- sf::st_read("data/AtlasGrid-GrilleAtlas.gdb", layer = "AtlasGrid_GrilleAtlas") |>
+
+densities <- read.csv("../data/densities.csv")
+species <- read.csv("../data/species.csv")
+geo <- sf::st_read("../data/AtlasGrid-GrilleAtlas.gdb", layer = "AtlasGrid_GrilleAtlas") |>
        sf::st_transform(crs = 4326)
 
+
+  pal <- leaflet::colorBin("YlOrRd", domain = geo$density)
+
 ui <- fluidPage(
-  theme = bslib::bs_theme(bootswatch = "flatly"),
+  theme = bslib::bs_theme(bootswatch = "flatly", version = 5),
   titlePanel("Shiny application template"),
   sidebarLayout(
     
@@ -36,11 +39,6 @@ ui <- fluidPage(
         # Panel 2
         tabPanel("Map",
           leafletOutput("map", width = "100%", height = "85vh")
-        ),
-        
-        # Panel 3 
-        tabPanel("Summary", 
-          # tableOutput("summary_table")
         )
       ),
       width = 9
