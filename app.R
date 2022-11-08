@@ -15,8 +15,8 @@ ui <- fluidPage(
     # Menu 
     sidebarPanel(
       h4("Table filtering"),
-      selectInput("species", label = "Species", choices = sort(unique(densities$Group))),
-      selectInput("period", label = "Period", choices = sort(unique(densities$Month))),
+      selectInput("species", label = "Species", choices = sort(unique(densities$Group)), multiple = TRUE, selected = sort(unique(densities$Group))[1]),
+      selectInput("period", label = "Period", choices = sort(unique(densities$Month)), multiple = TRUE, selected = sort(unique(densities$Month))[1]),
       br(),
       h4("Spatial filtering"),
       sliderInput("lon", label = "Longitude", value = c(-93, -18), min = -93, max = -18),
@@ -40,7 +40,22 @@ ui <- fluidPage(
         
         # Panel 3 
         tabPanel("Summary", 
-          # tableOutput("summary_table")
+          fluidRow(
+            column(4, 
+              h4("Number of species"),
+              textOutput("nspecies")          
+            ),
+            column(4, 
+              h4("Number of periods"),
+              textOutput("nperiods")
+            ),
+            column(4, 
+              h4("Mean density"),
+              textOutput("mn_density")      
+            )
+          ),
+          br(),br(),hr(),
+          tableOutput("summary")          
         )
       ),
       width = 9
@@ -52,12 +67,12 @@ server <- function(input, output, session) {
   densities_filter <- reactive({
     dplyr::filter(
       densities, 
-      Group == input$species,
-      Month == input$period
+      Group %in% input$species,
+      Month %in% input$period
     )
   })
   
-  atlas_filter <- reactive({
+  geo_filter <- reactive({
     # Create bounding box
     bbox <- c(
       xmin = input$lon[1], ymin = input$lat[1], 
@@ -69,6 +84,26 @@ server <- function(input, output, session) {
     # Intersect with atlas grid
     geo[bbox, ]
   })
+  
+  # Density of all birds selected during all seasons selected in specified bbox
+  geo_data <- reactive({
+    dat <- dplyr::group_by(
+      densities_filter(),
+      Stratum
+    ) |>
+    dplyr::summarize(Density = sum(Density, na.rm = TRUE))
+    
+    # Join with spatial data 
+    dplyr::left_join(geo_filter(), dat, by = c("id" = "Stratum")) |>
+    dplyr::select(Density)
+  })
+ 
+  summary_table <- reactive({
+    dplyr::group_by(densities_filter(), Group, Month) |>
+    dplyr::summarise(Density = round(sum(Density, na.rm = TRUE),2)) |>
+    tidyr::pivot_wider(names_from = Month, values_from = Density)
+    
+  })
  
   output$table <- renderDataTable(
     densities_filter(),  
@@ -77,12 +112,38 @@ server <- function(input, output, session) {
   )
   
   output$map <- renderLeaflet({
-    leaflet(atlas_filter()) |> 
+    # Color palette
+    rgeo <- range(geo_data()$Density, na.rm = TRUE)
+    pal <- leaflet::colorNumeric(
+      viridis::viridis_pal(option = "D")(100), 
+      domain = rgeo
+    )
+    
+    # Map
+    leaflet(geo_data()) |> 
     setView(lng = -55.5, lat = 60, zoom = 4) |>
     addProviderTiles("CartoDB.Positron") |>
-    addPolygons()
+    addPolygons(
+      opacity = 1,
+      weight = 1, 
+      color = ~pal(geo_data()$Density)) |>
+    addLegend(
+      position = "bottomright",
+      pal = pal,
+      values = seq(rgeo[1], rgeo[2], length.out = 5),
+      opacity = 1,
+      title = "Bird density"
+      )
   })
 
+  output$nspecies <- renderText(length(input$species))
+  output$nperiods <- renderText(length(input$period))
+  output$mn_density <- renderText(round(mean(geo_data()$Density, na.rm = TRUE), 2))
+  output$summary <- renderTable(
+    summary_table(),
+    rownames= FALSE, 
+    options = list(pageLength = 10)
+  )
 }
 
 shinyApp(ui, server)
