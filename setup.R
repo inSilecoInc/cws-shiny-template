@@ -9,7 +9,7 @@ resources <- list(
     location = "http://data.ec.gc.ca/data/species/assess/atlas-of-seabirds-at-sea-in-eastern-canada-2006-2016/AtlasGrid-GrilleAtlas.gdb.zip",
     outputdir = "data"
   ),
-  density = list(
+  data = list(
     file = "DensityData-DonneesDeDensite.xlsx",
     location = "http://data.ec.gc.ca/data/species/assess/atlas-of-seabirds-at-sea-in-eastern-canada-2006-2016/DensityData-DonneesDeDensite.xlsx",
     outputdir = "data"
@@ -31,20 +31,31 @@ for (resource in resources){
   }
 } 
 
+# Import species dictionnary and simplify
+species <- readxl::read_excel(paste(resources$dictionnary$outputdir, resources$dictionnary$file, sep = "/"), "Species-Espèces") |>
+            dplyr::select(Species_ID, English_Name, Scientific_Name, Family_Sci)
+
 # Import density data and simplify
-densities <- readxl::read_excel(paste(resources$density$outputdir, resources$density$file, sep = "/"), "Densities") |>
+densities <- readxl::read_excel(paste(resources$data$outputdir, resources$data$file, sep = "/"), "Densities") |>
               dplyr::select(Group, Month, Stratum, Density) |>
               dplyr::mutate(
                 Month = replace(Month, Month == "04050607", "April-July"),
                 Month = replace(Month, Month == "08091011", "August-November"),
                 Month = replace(Month, Month == "12010203", "December-March")
-              )
+              ) |> dplyr::filter(Group %in% Species_ID)
 
-# Import species dictionnary and simplify
-species <- readxl::read_excel(paste(resources$dictionnary$outputdir, resources$dictionnary$file, sep = "/"), "Species-Espèces") |>
-            dplyr::select(Species_ID, English_Name, Scientific_Name, Family_Sci)
+# Import effort data and simplify
+effort <- readxl::read_excel(paste(resources$data$outputdir, resources$data$file, sep = "/"), "Effort") |>
+              dplyr::select(Stratum, Month, nbspecies, nbobs, nbind, nbsamples, nbkm, nbcruiseID, nbdays) |>
+              dplyr::mutate(
+                Month = replace(Month, Month == "04050607", "April-July"),
+                Month = replace(Month, Month == "08091011", "August-November"),
+                Month = replace(Month, Month == "12010203", "December-March")
+              ) |> tidyr::pivot_longer(cols = nbspecies:nbdays) 
+
 
 # Export as csv
 write.csv(densities, "data/densities.csv", row.names = FALSE)
 write.csv(species, "data/species.csv", row.names = FALSE)
+write.csv(effort, "data/effort.csv", row.names = FALSE)
 
