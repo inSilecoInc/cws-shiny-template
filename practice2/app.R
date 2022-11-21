@@ -1,14 +1,17 @@
 library(shiny)
 library(DT)
 library(leaflet)
-source("setup.R")
-densities <- read.csv("data/densities.csv")
-species <- read.csv("data/species.csv")
-geo <- sf::st_read("data/AtlasGrid-GrilleAtlas.gdb", layer = "AtlasGrid_GrilleAtlas") |>
+
+densities <- read.csv("../data/densities.csv")
+species <- read.csv("../data/species.csv")
+geo <- sf::st_read("../data/AtlasGrid-GrilleAtlas.gdb", layer = "AtlasGrid_GrilleAtlas") |>
        sf::st_transform(crs = 4326)
 
+
+pal <- leaflet::colorBin("YlOrRd", domain = geo$density)
+
 ui <- fluidPage(
-  theme = bslib::bs_theme(bootswatch = "flatly"),
+  theme = bslib::bs_theme(bootswatch = "yeti", version = 5),
   titlePanel("Shiny application template"),
   sidebarLayout(
     
@@ -36,26 +39,6 @@ ui <- fluidPage(
         # Panel 2
         tabPanel("Map",
           leafletOutput("map", width = "100%", height = "85vh")
-        ),
-        
-        # Panel 3 
-        tabPanel("Summary", 
-          fluidRow(
-            column(4, 
-              h4("Number of species"),
-              textOutput("nspecies")          
-            ),
-            column(4, 
-              h4("Number of periods"),
-              textOutput("nperiods")
-            ),
-            column(4, 
-              h4("Mean density"),
-              textOutput("mn_density")      
-            )
-          ),
-          br(),br(),hr(),
-          tableOutput("summary")          
         )
       ),
       width = 9
@@ -98,13 +81,6 @@ server <- function(input, output, session) {
     dplyr::select(Density)
   })
  
-  summary_table <- reactive({
-    dplyr::group_by(densities_filter(), Group, Month) |>
-    dplyr::summarise(Density = round(sum(Density, na.rm = TRUE),2)) |>
-    tidyr::pivot_wider(names_from = Month, values_from = Density)
-    
-  })
- 
   output$table <- renderDataTable(
     densities_filter(),  
     rownames= FALSE, 
@@ -136,14 +112,6 @@ server <- function(input, output, session) {
       )
   })
 
-  output$nspecies <- renderText(length(input$species))
-  output$nperiods <- renderText(length(input$period))
-  output$mn_density <- renderText(round(mean(geo_data()$Density, na.rm = TRUE), 2))
-  output$summary <- renderTable(
-    summary_table(),
-    rownames= FALSE, 
-    options = list(pageLength = 10)
-  )
 }
 
 shinyApp(ui, server)
