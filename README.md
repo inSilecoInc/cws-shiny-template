@@ -60,5 +60,5 @@ for(lib in install_libs) install.packages(lib, dependencies=TRUE)
 sapply(pkgs, require, character=TRUE)
 
 # Download the data required
-source(setup.R)
+source("setup.R")
 ```

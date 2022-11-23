@@ -42,7 +42,8 @@ densities <- readxl::read_excel(paste(resources$data$outputdir, resources$data$f
                 Month = replace(Month, Month == "04050607", "April-July"),
                 Month = replace(Month, Month == "08091011", "August-November"),
                 Month = replace(Month, Month == "12010203", "December-March")
-              ) |> dplyr::filter(Group %in% Species_ID)
+              ) |> 
+              dplyr::filter(Group %in% species$Species_ID)
 
 # Import effort data and simplify
 effort <- readxl::read_excel(paste(resources$data$outputdir, resources$data$file, sep = "/"), "Effort") |>
