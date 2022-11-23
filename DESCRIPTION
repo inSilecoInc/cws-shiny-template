@@ -1,0 +1,20 @@
+Package: placeholder
+Type: workshop
+Title: Our Shiny app
+Version: 0.0.0.9000
+Date: 2022-22-12
+Authors@R: c(
+  person("inSileco Inc.", role = c("aut", "cre"), email = "kevin.cazelles@insileco.io")
+  )
+Description: CWS Shiny workshop. Our app.
+Imports:
+  bslib,
+  dplyr,
+  DT,
+  leaflet,
+  profvis,
+  reactlog,
+  renv,
+  rsconnect,
+  sf,
+  shiny
