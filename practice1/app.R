@@ -20,12 +20,7 @@ ui <- fluidPage(
      
     # Main panel of application 
     mainPanel(
-      tabsetPanel(
-        # Panel 1 
-        tabPanel(
-          "Species table",
-          dataTableOutput("table")
-        ))
+      dataTableOutput("table"),
       width = 9
     )
   )  
