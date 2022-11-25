@@ -3,7 +3,6 @@ library(DT)
 library(leaflet)
 
 densities <- read.csv("../data/densities.csv")
-species <- read.csv("../data/species.csv")
 geo <- sf::st_read("../data/AtlasGrid-GrilleAtlas.gdb", layer = "AtlasGrid_GrilleAtlas") |>
        sf::st_transform(crs = 4326)
 
@@ -18,12 +17,36 @@ ui <- fluidPage(
     # Menu 
     sidebarPanel(
       h4("Table filtering"),
-      selectInput("species", label = "Species", choices = sort(unique(densities$Group)), multiple = TRUE, selected = sort(unique(densities$Group))[1]),
-      selectInput("period", label = "Period", choices = sort(unique(densities$Month)), multiple = TRUE, selected = sort(unique(densities$Month))[1]),
+      selectInput(
+        "species", 
+        label = "Species", 
+        choices = sort(unique(densities$Group)), 
+        multiple = TRUE, 
+        selected = sort(unique(densities$Group))[1])
+        ,
+      selectInput(
+        "period", 
+        label = "Period", 
+        choices = sort(unique(densities$Month)), 
+        multiple = TRUE, 
+        selected = sort(unique(densities$Month))[1]
+      ),
       br(),
       h4("Spatial filtering"),
-      sliderInput("lon", label = "Longitude", value = c(-93, -18), min = -93, max = -18),
-      sliderInput("lat", label = "Latitude", value = c(36, 76), min = 36, max = 76),
+      sliderInput(
+        "lon", 
+        label = "Longitude", 
+        value = c(-93, -18), 
+        min = -93, 
+        max = -18
+      ),
+      sliderInput(
+        "lat", 
+        label = "Latitude", 
+        value = c(36, 76), 
+        min = 36, 
+        max = 76
+      ),
       width = 3
     ),
      
