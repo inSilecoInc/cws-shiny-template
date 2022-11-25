@@ -54,11 +54,11 @@ pkgs <- c(
 install_pkgs <- pkgs[!pkgs %in% installed.packages()]
 
 # Install the missing dependancies
-for(lib in install_libs) install.packages(lib, dependencies=TRUE)
+for(lib in install_pkgs) install.packages(lib, dependencies=TRUE)
 
 # Load all packages dependancies
 sapply(pkgs, require, character=TRUE)
 
 # Download the data required
-source(setup.R)
+source("setup.R")
 ```
