@@ -1,9 +1,6 @@
 library(shiny)
-library(DT)
-library(leaflet)
 
 densities <- read.csv("../data/densities.csv")
-species <- read.csv("../data/species.csv")
 
 ui <- fluidPage(
   theme = bslib::bs_theme(bootswatch = "yeti", version = 5),
@@ -38,7 +35,6 @@ server <- function(input, output, session) {
  
   output$table <- renderDataTable(
     densities_filter(),  
-    rownames= FALSE, 
     options = list(pageLength = 10)
   )
 }
