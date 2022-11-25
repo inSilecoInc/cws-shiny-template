@@ -59,4 +59,3 @@ effort <- readxl::read_excel(paste(resources$data$outputdir, resources$data$file
 write.csv(densities, "data/densities.csv", row.names = FALSE)
 write.csv(species, "data/species.csv", row.names = FALSE)
 write.csv(effort, "data/effort.csv", row.names = FALSE)
-

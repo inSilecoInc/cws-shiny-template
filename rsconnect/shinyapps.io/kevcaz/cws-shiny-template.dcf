@@ -1,0 +1,11 @@
+name: cws-shiny-template
+title: Our first Shiny
+username: KevCaz
+account: kevcaz
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7711134
+bundleId: 6545201
+url: https://kevcaz.shinyapps.io/cws-shiny-template/
+when: 1669171635.67804
+lastSyncTime: 1669171635.67808
